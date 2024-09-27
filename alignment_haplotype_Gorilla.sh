@@ -1,53 +1,58 @@
 #!/bin/bash 
 
 #SBATCH -J calling_variants_and_multihetsep
-#SBATCH -A SCALLY-SL3-CPU
+#SBATCH -A SCALLY-SL3-CPU ## Use Durbin Group Account Here
 #SBATCH -p icelake-himem
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --mem=60000
 #SBATCH --get-user-env
-#SBATCH --array=1-23
+#SBATCH --array=1-23 ##Number of chromosomes your species have
 #SBATCH --mail-type=NONE
 #SBATCH --time=01:00:00
-#SBATCH --error=/home/jg2162/rds/hpc-work/log_files_meta/log_file_species_new_mask/Gorilla/calling_variants%j.err
-#SBATCH --output=/home/jg2162/rds/hpc-work/log_files_meta/log_file_species_new_mask/Gorilla/calling_variants%j.out
+#SBATCH --error=/home/jg2162/rds/hpc-work/log_files_meta/log_file_species_new_mask/Gorilla/calling_variants%j.err ##change where you want to save the log file
+#SBATCH --output=/home/jg2162/rds/hpc-work/log_files_meta/log_file_species_new_mask/Gorilla/calling_variants%j.out ##Change where you want to save the log file
 
 CHROMS_1=( "chr1_pat_hsa1" "chr2_pat_hsa3" "chr3_pat_hsa4" "chr4_pat_hsa17x5" "chr5_pat_hsa6" "chr6_pat_hsa7" "chr7_pat_hsa8" "chr8_pat_hsa10" "chr9_pat_hsa11" "chr10_pat_hsa12" "chr11_pat_hsa2b" "chr12_pat_hsa2a" "chr13_pat_hsa9" "chr14_pat_hsa13" "chr15_pat_hsa14" "chr16_pat_hsa15" "chr17_pat_hsa18" "chr18_pat_hsa16" "chr19_pat_hsa5x17" "chr20_pat_hsa19" "chr21_pat_hsa20" "chr22_pat_hsa21" "chr23_pat_hsa22" )
 CHROMS_2=( "chr1_mat_hsa1" "chr2_mat_hsa3" "chr3_mat_hsa4" "chr4_mat_hsa17x5" "chr5_mat_hsa6" "chr6_mat_hsa7" "chr7_mat_hsa8" "chr8_mat_hsa10" "chr9_mat_hsa11" "chr10_mat_hsa12" "chr11_mat_hsa2b" "chr12_mat_hsa2a" "chr13_mat_hsa9" "chr14_mat_hsa13" "chr15_mat_hsa14" "chr16_mat_hsa15" "chr17_mat_hsa18" "chr18_mat_hsa16" "chr19_mat_hsa5x17" "chr20_mat_hsa19" "chr21_mat_hsa20" "chr22_mat_hsa21" "chr23_mat_hsa22" )
 
-TEMP="/home/jg2162/rds/hpc-work/temp/Gorilla"
-OUTPUT="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_vcf_file_haplotype"
-OUTPUT_MULTIHET="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_multihet_from_haplotype"
+##CHROM 1 is first haplotype name should be same as in fasta file
+##CHROM 2 is second haplotye name should be same as in fasta file
+##CHROM 1 and CHROM 2 should be in order of allignment
+TEMP="/home/jg2162/rds/hpc-work/temp/Gorilla" ##Change
+OUTPUT="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_vcf_file_haplotype" ##Change
+OUTPUT_MULTIHET="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_multihet_from_haplotype" ##Change
 
-export PATH=$PATH:/home/jg2162/Cam_simulation_Data/tools/minimap2
+export PATH=$PATH:/home/jg2162/Cam_simulation_Data/tools/minimap2 ##give your location of minimap
 
 CHROM1=${CHROMS_1[$SLURM_ARRAY_TASK_ID-1]}
 CHROM2=${CHROMS_2[$SLURM_ARRAY_TASK_ID-1]}
 
-HAP1="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Diploid_reference_species/Gorilla/mGorGor1.pat.cur.20231122.fasta.gz"
-HAP2="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Diploid_reference_species/Gorilla/mGorGor1.mat.cur.20231122.fasta.gz"
+HAP1="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Diploid_reference_species/Gorilla/mGorGor1.pat.cur.20231122.fasta.gz" ## HAP1 is first haplotype all fasta files
+HAP2="/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Diploid_reference_species/Gorilla/mGorGor1.mat.cur.20231122.fasta.gz" ## HAP2 is second haplotype all fasta files
 
-OUTPUT_BED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_BED_file/${CHROM1}
-mkdir -p ${OUTPUT_BED}
+OUTPUT_BED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_BED_file/${CHROM1} ##change
+mkdir -p ${OUTPUT_BED} 
 
-OUTPUT_INDEL_BED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_indel_BED_file/${CHROM1}
+OUTPUT_INDEL_BED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_indel_BED_file/${CHROM1} ##change
 mkdir -p ${OUTPUT_INDEL_BED}
 
-OUTPUT_BAM_CALLER_BED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_bam_caller_BED_file/${CHROM1}
+OUTPUT_BAM_CALLER_BED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_bam_caller_BED_file/${CHROM1} ##change
 mkdir -p ${OUTPUT_BAM_CALLER_BED}
 
-OUTPUT_MULTIHET_FILTERED_95=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_multihet_filtered_95
+OUTPUT_MULTIHET_FILTERED_95=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_multihet_filtered_95 ##change
 mkdir -p ${OUTPUT_MULTIHET_FILTERED_95}
 
-OUTPUT_MHS_BOOTSTRAPPED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_Multihet_Bootstrapped
+OUTPUT_MHS_BOOTSTRAPPED=/home/jg2162/rds/hpc-work/Cam_Evan_eichler_new_data/Data_species_specific/Gorilla/Output_Multihet_Bootstrapped ##change
 mkdir -p ${OUTPUT_MHS_BOOTSTRAPPED}
 
-GENERATE_MULTIHETSEP="/home/jg2162/Cam_simulation_Data/tools/msmc-tools/generate_multihetsep.py"
-MASK_FILE_GENERATOR="/home/jg2162/Cam_simulation_Data/script/mask_file.py"
-BOOTSTRAPPING_GENERATOR="/home/jg2162/Cam_simulation_Data/tools/cobraa/reproducibility/block_bootstrap_mhs.py"
-BAM_CALLER="/home/jg2162/Cam_simulation_Data/tools/msmc-tools/bamCaller.py"
-INDEL_MASKER="/home/jg2162/Cam_simulation_Data/script/indel_mask.py"
+GENERATE_MULTIHETSEP="/home/jg2162/Cam_simulation_Data/tools/msmc-tools/generate_multihetsep.py" ##change "MSMC-tools"
+MASK_FILE_GENERATOR="/home/jg2162/Cam_simulation_Data/script/mask_file.py" ##change (In this github directory)
+BOOTSTRAPPING_GENERATOR="/home/jg2162/Cam_simulation_Data/tools/cobraa/reproducibility/block_bootstrap_mhs.py" ##"Cobraa-Trevor Cousin" also in this github directory
+BAM_CALLER="/home/jg2162/Cam_simulation_Data/tools/msmc-tools/bamCaller.py" ##"MSMC-tools"
+INDEL_MASKER="/home/jg2162/Cam_simulation_Data/script/indel_mask.py" ##In this github directory
+
+##I dont think you need to change anything after that
 
 ##Extracting the relevant FASTA sequences
 # echo "Extracting the chromosome FASTA sequences .... "
